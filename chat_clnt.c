@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
     int str_len;
 
     if(argc != 3) {
-        printf("Usage : %s <IP> <port> <name>\n", argv[0]);
+        printf("Usage : %s <IP> <port>\n", argv[0]);
         exit(1);
     }
 
@@ -83,7 +83,6 @@ int main(int argc, char *argv[]) {
             printf("%s", msg);
         }
         else if(strncmp(msg, "3", 1) == 0) {
-            // 종료
             break;
         }
         else {
@@ -104,7 +103,7 @@ void * send_msg(void * arg) {
     char name_msg[NAME_SIZE + BUF_SIZE];
     while(1) {
         fgets(msg, BUF_SIZE, stdin);
-        if(!strcmp(msg, "q\n") || !strcmp(msg, "Q\n")) {
+        if(!strcmp(msg,"q\n") || !strcmp(msg,"Q\n")) {
             close(sock);
             exit(0);
         }
