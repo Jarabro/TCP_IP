@@ -27,6 +27,7 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in serv_adr, clnt_adr;
     socklen_t clnt_adr_sz;
     pthread_t t_id;
+        int option = 1;
 
     if (argc != 2) {
         printf("Usage : %s <port>\n", argv[0]);
@@ -35,6 +36,8 @@ int main(int argc, char *argv[]) {
 
     pthread_mutex_init(&mutx, NULL);
     serv_sock = socket(PF_INET, SOCK_STREAM, 0);
+
+        setsockopt(serv_sock, SOL_SOCKET, SO_REUSEADDR, &option , sizeof(option));
 
     memset(&serv_adr, 0, sizeof(serv_adr));
     serv_adr.sin_family = AF_INET;
@@ -76,8 +79,7 @@ void *handle_clnt(void *arg) {
             "===========================\n"
             "1. chatting room\n"
             "2. name setting\n"
-            "3. exit\n"
-            "choose number : ";
+            "3. exit\n";
         write(clnt->sock, menu, strlen(menu));
 
         str_len = read(clnt->sock, msg, BUF_SIZE - 1);
@@ -92,7 +94,7 @@ void *handle_clnt(void *arg) {
                 str_len = read(clnt->sock, msg, BUF_SIZE - 1);
                 if (str_len <= 0) break;
                 msg[strcspn(msg, "\r\n")] = 0;
-
+                                printf("returnmenu << insert ");
                 if (strcmp(msg, "returnmenu") == 0) break;
 
                 sprintf(buf, "%s: %s\n", clnt->name, msg);
@@ -101,10 +103,18 @@ void *handle_clnt(void *arg) {
         } else if (strcmp(msg, "2") == 0) {
             char prompt[] = "Enter new name: ";
             write(clnt->sock, prompt, strlen(prompt));
+
             str_len = read(clnt->sock, msg, NAME_SIZE - 1);
             if (str_len <= 0) break;
             msg[strcspn(msg, "\r\n")] = 0;
             strcpy(clnt->name, msg);
+
+                        char flush_buf[BUF_SIZE];
+                        while((str_len = read(clnt->sock, flush_buf, BUF_SIZE - 1)) > 0){
+                                flush_buf[str_len] = 0;
+                                if(strchr(flush_buf, '\n') || strchr(flush_buf, '\r')) break;
+                        }
+
             sprintf(buf, "Name changed to %s.\n", clnt->name);
             write(clnt->sock, buf, strlen(buf));
         } else if (strcmp(msg, "3") == 0) {
@@ -146,3 +156,4 @@ void error_handling(char *msg) {
     fputc('\n', stderr);
     exit(1);
 }
+
