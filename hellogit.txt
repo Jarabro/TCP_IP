@@ -1,4 +1,0 @@
-# Hello git
-git init (깃 로컬 레파지토리생성)
-git status (깃 )
-
