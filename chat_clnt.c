@@ -82,4 +82,52 @@ int main(int argc, char *argv[]) {
             msg[str_len] = 0;
             printf("%s", msg);
         }
-        else if
+        else if(strncmp(msg, "3", 1) == 0) {
+            // 종료
+            break;
+        }
+        else {
+            // 잘못된 입력
+            str_len = read(sock, msg, BUF_SIZE - 1);
+            if(str_len <= 0) break;
+            msg[str_len] = 0;
+            printf("%s", msg);
+        }
+    }
+
+    close(sock);
+    return 0;
+}
+
+void * send_msg(void * arg) {
+    int sock = *((int*)arg);
+    char name_msg[NAME_SIZE + BUF_SIZE];
+    while(1) {
+        fgets(msg, BUF_SIZE, stdin);
+        if(!strcmp(msg, "q\n") || !strcmp(msg, "Q\n")) {
+            close(sock);
+            exit(0);
+        }
+        sprintf(name_msg, "%s %s", name, msg);
+        write(sock, name_msg, strlen(name_msg));
+    }
+    return NULL;
+}
+
+void * recv_msg(void * arg) {
+    int sock = *((int*)arg);
+    char msg[BUF_SIZE];
+    int str_len;
+    while((str_len = read(sock, msg, sizeof(msg) - 1)) > 0) {
+        msg[str_len] = 0;
+        fputs(msg, stdout);
+        fflush(stdout);
+    }
+    return NULL;
+}
+
+void error_handling(char * msg) {
+    fputs(msg, stderr);
+    fputc('\n', stderr);
+    exit(1);
+}
